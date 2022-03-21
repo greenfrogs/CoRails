@@ -1,0 +1,312 @@
+﻿{
+  "tiles": [
+    {
+      "name": "Grass",
+      "asset": "ground_grass",
+      "collider": true,
+      "tag": "Teleport",
+      "removeShadows": true
+    },
+    {
+      "name": "Water",
+      "asset": "ground_riverOpen",
+      "collider": true,
+      "tag": "",
+      "removeShadows": true
+    },
+    {
+      "name": "Slope",
+      "asset": "cliff_steps_rock",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Cliff",
+      "asset": "cliff_block_rock",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Cliff-Edge",
+      "asset": "cliff_top_rock",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Cliff-Corner",
+      "asset": "cliff_cornerTop_rock",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Bridge-Short",
+      "asset": "bridge_woodNarrow",
+      "collider": true,
+      "tag": "Teleport"
+    },
+    {
+      "name": "Bridge-Centre",
+      "asset": "bridge_center_woodRound",
+      "collider": true,
+      "tag": "Teleport"
+    },
+    {
+      "name": "Bridge-Start",
+      "asset": "bridge_side_woodRound",
+      "collider": true,
+      "tag": "Teleport"
+    },
+    {
+      "name": "Bridge-Short-Stone",
+      "asset": "bridge_woodRoundNarrow",
+      "collider": true,
+      "tag": "Teleport"
+    },
+    {
+      "name": "Bridge-Centre-Stone",
+      "asset": "bridge_center_stoneRound",
+      "collider": true,
+      "tag": "Teleport"
+    },
+    {
+      "name": "Bridge-Start-Stone",
+      "asset": "bridge_side_stoneRound",
+      "collider": true,
+      "tag": "Teleport"
+    },
+    {
+      "name": "Tree-1",
+      "asset": "tree_blocks",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Tree-2",
+      "asset": "tree_blocks_dark",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Tree-3",
+      "asset": "tree_cone",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Tree-4",
+      "asset": "tree_cone_dark",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Tree-5",
+      "asset": "tree_default",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Tree-6",
+      "asset": "tree_default_dark",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Tree-7",
+      "asset": "tree_fat",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Tree-8",
+      "asset": "tree_fat_darkh",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Tree-9",
+      "asset": "tree_oak",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Tree-10",
+      "asset": "tree_oak_dark",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Tree-11",
+      "asset": "tree_detailed",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Flower-Purple-A",
+      "asset": "flower_purpleA",
+      "collider": false,
+      "tag": ""
+    },
+    {
+      "name": "Flower-Purple-B",
+      "asset": "flower_purpleB",
+      "collider": false,
+      "tag": ""
+    },
+    {
+      "name": "Flower-Purple-C",
+      "asset": "flower_purpleC",
+      "collider": false,
+      "tag": ""
+    },
+    {
+      "name": "Flower-Red-A",
+      "asset": "flower_redA",
+      "collider": false,
+      "tag": ""
+    },
+    {
+      "name": "Flower-Red-B",
+      "asset": "flower_redB",
+      "collider": false,
+      "tag": ""
+    },
+    {
+      "name": "Flower-Red-C",
+      "asset": "flower_redC",
+      "collider": false,
+      "tag": ""
+    },
+    {
+      "name": "Flower-Yellow-A",
+      "asset": "flower_yellowA",
+      "collider": false,
+      "tag": ""
+    },
+    {
+      "name": "Flower-Yellow-B",
+      "asset": "flower_yellowB",
+      "collider": false,
+      "tag": ""
+    },
+    {
+      "name": "Flower-Yellow-C",
+      "asset": "flower_yellowC",
+      "collider": false,
+      "tag": ""
+    },
+    {
+      "name": "Bush-1",
+      "asset": "plant_bush",
+      "collider": false,
+      "tag": ""
+    },
+    {
+      "name": "Bush-2",
+      "asset": "plant_bushDetailed",
+      "collider": false,
+      "tag": ""
+    },
+    {
+      "name": "Bush-3",
+      "asset": "plant_bushLarge",
+      "collider": false,
+      "tag": ""
+    },
+    {
+      "name": "Bush-4",
+      "asset": "plant_bushLargeTriangle",
+      "collider": false,
+      "tag": ""
+    },
+    {
+      "name": "Bush-5",
+      "asset": "plant_bushSmall",
+      "collider": false,
+      "tag": ""
+    },
+    {
+      "name": "Bush-6",
+      "asset": "plant_bushTriangle",
+      "collider": false,
+      "tag": ""
+    },
+    {
+      "name": "Path",
+      "asset": "path_stone",
+      "collider": false,
+      "tag": "Teleport"
+    },
+    {
+      "name": "Path-Corner",
+      "asset": "path_stoneCorner",
+      "collider": false,
+      "tag": "Teleport"
+    },
+    {
+      "name": "Path-Centre",
+      "asset": "path_stoneCircle",
+      "collider": false,
+      "tag": "Teleport"
+    },
+    {
+      "name": "Path-End",
+      "asset": "path_stoneEnd",
+      "collider": false,
+      "tag": "Teleport"
+    },
+    {
+      "name": "Rock-1",
+      "asset": "stone_largeA",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Rock-2",
+      "asset": "stone_largeB",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Rock-3",
+      "asset": "stone_largeC",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Rock-4",
+      "asset": "stone_largeD",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Rock-5",
+      "asset": "stone_largeE",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Rock-6",
+      "asset": "stone_largeF",
+      "collider": true,
+      "tag": ""
+    },
+    {
+      "name": "Lilly-1",
+      "asset": "lily_large",
+      "collider": false,
+      "tag": ""
+    },
+    {
+      "name": "Lilly-2",
+      "asset": "lily_small",
+      "collider": false,
+      "tag": ""
+    },
+    {
+      "name": "Debug",
+      "asset": "campfire_planks",
+      "collider": false,
+      "tag": ""
+    }
+  ]
+}
