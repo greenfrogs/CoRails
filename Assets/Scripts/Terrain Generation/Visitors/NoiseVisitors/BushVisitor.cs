@@ -14,14 +14,14 @@ namespace Terrain_Generation.Visitors.NoiseVisitors {
         protected override ChunkObject Place(Chunk chunk) {
             string name = "Bush-" + RandomNumberGenerator.Instance.Generate(1, 6);
             float y = 0f;
-            
+
             if (chunk.type == BaseLayerType.Water) {
                 name = "Lilly-" + RandomNumberGenerator.Instance.Generate(1, 2);
                 y = -0.05f;
             }
 
-            ChunkObject chunkObject = new ChunkObject(name, 0, y, 0,
-                Quaternion.Euler(0, (float)RandomNumberGenerator.Instance.Generate(0, 7) * 45, 0));
+            var chunkObject = new ChunkObject(name, 0, y, 0,
+                Quaternion.Euler(0, (float) RandomNumberGenerator.Instance.Generate(0, 7) * 45, 0));
 
             return chunkObject;
         }

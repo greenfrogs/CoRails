@@ -99,7 +99,7 @@ Rigidbody:
   m_AngularDrag: 0.05
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 3
 --- !u!64 &5439416320581199063
@@ -129,7 +129,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   owner: 0
-  type: rock
+  type: stone
 --- !u!199 &-3248942541314609736
 ParticleSystemRenderer:
   serializedVersion: 6

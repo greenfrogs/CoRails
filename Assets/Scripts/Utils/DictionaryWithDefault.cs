@@ -1,24 +1,21 @@
 ﻿using System.Collections.Generic;
 
 namespace Utils {
-    public class DictionaryWithDefault<TKey, TValue> : Dictionary<TKey, TValue>
-    {
-        TValue _default;
-        public TValue DefaultValue {
-            get { return _default; }
-            set { _default = value; }
+    public class DictionaryWithDefault<TKey, TValue> : Dictionary<TKey, TValue> {
+        public DictionaryWithDefault() { }
+
+        public DictionaryWithDefault(TValue defaultValue) {
+            DefaultValue = defaultValue;
         }
-        public DictionaryWithDefault() : base() { }
-        public DictionaryWithDefault(TValue defaultValue) : base() {
-            _default = defaultValue;
-        }
-        public new TValue this[TKey key]
-        {
-            get { 
+
+        public TValue DefaultValue { get; set; }
+
+        public new TValue this[TKey key] {
+            get {
                 TValue t;
-                return base.TryGetValue(key, out t) ? t : _default;
+                return TryGetValue(key, out t) ? t : DefaultValue;
             }
-            set { base[key] = value; }
+            set => base[key] = value;
         }
     }
 }

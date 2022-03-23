@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/ExampleGeneration.unity
+    path: Assets/Scenes/CoRails.unity
     guid: e92e3f47c7d52054685875ddb94feeba
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: 21de8d80949766a41b2cdeb85b3acc4e, type: 2}

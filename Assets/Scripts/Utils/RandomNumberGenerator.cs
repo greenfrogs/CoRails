@@ -1,56 +1,55 @@
 ﻿using System;
+using UnityEngine;
 
 namespace Utils {
     /// <summary>
-    /// Random Number Generator based on Mersenne-Twister algorithm
-    /// 
-    /// Usage : 
-    ///    RandomNumberGenerator.Instance.Generate());
-    ///    RandomNumberGenerator.Instance.Generate(1.1,2.2);
-    ///    RandomNumberGenerator.Instance.Generate(1,100)
-    /// 
-    /// inspired from : http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/VERSIONS/C-LANG/980409/mt19937-2.c
+    ///     Random Number Generator based on Mersenne-Twister algorithm
+    ///     Usage :
+    ///     RandomNumberGenerator.Instance.Generate());
+    ///     RandomNumberGenerator.Instance.Generate(1.1,2.2);
+    ///     RandomNumberGenerator.Instance.Generate(1,100)
+    ///     inspired from : http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/VERSIONS/C-LANG/980409/mt19937-2.c
     /// </summary>
     public class RandomNumberGenerator {
         #region constants
 
         /// <summary>
-        /// N
+        ///     N
         /// </summary>
         private static readonly int N = 624;
 
         /// <summary>
-        /// M
+        ///     M
         /// </summary>
         private static readonly int M = 397;
 
         /// <summary>
-        /// Constant vector a
+        ///     Constant vector a
         /// </summary>
-        private readonly UInt32 MATRIX_A = 0x9908b0df;
+        private readonly uint MATRIX_A = 0x9908b0df;
 
         /// <summary>
-        /// most significant w-r bits
+        ///     most significant w-r bits
         /// </summary>
-        private readonly UInt32 UPPER_MASK = 0x80000000;
+        private readonly uint UPPER_MASK = 0x80000000;
 
         /// <summary>
-        /// least significant r bits
+        ///     least significant r bits
         /// </summary>
-        private readonly UInt32 LOWER_MASK = 0x7fffffff;
+        private readonly uint LOWER_MASK = 0x7fffffff;
 
         /// <summary>
-        /// Tempering mask B
+        ///     Tempering mask B
         /// </summary>
-        private readonly UInt32 TEMPERING_MASK_B = 0x9d2c5680;
+        private readonly uint TEMPERING_MASK_B = 0x9d2c5680;
 
         /// <summary>
-        /// Tempering mask C
+        ///     Tempering mask C
         /// </summary>
-        private readonly UInt32 TEMPERING_MASK_C = 0xefc60000;
+        private readonly uint TEMPERING_MASK_C = 0xefc60000;
 
         /// <summary>
-        /// Last constant used for generation
+        ///     Last constant used for generation
         /// </summary>
         private readonly double FINAL_CONSTANT = 2.3283064365386963e-10;
 
@@ -60,17 +59,14 @@ namespace Utils {
 
         private static volatile RandomNumberGenerator instance;
 
-        private static object syncRoot = new Object();
+        private static readonly object syncRoot = new object();
 
         public static RandomNumberGenerator Instance {
             get {
-                if (instance == null) {
+                if (instance == null)
                     lock (syncRoot) {
-                        if (instance == null) {
-                            instance = new RandomNumberGenerator();
-                        }
+                        if (instance == null) instance = new RandomNumberGenerator();
                     }
-                }
 
                 return instance;
             }
@@ -78,7 +74,7 @@ namespace Utils {
 
         private RandomNumberGenerator() {
             //init
-            this.sgenrand(4327);
+            sgenrand(4327);
         }
 
         #endregion
@@ -106,12 +102,12 @@ namespace Utils {
         #region properties
 
         /// <summary>
-        /// the array for the state vector
+        ///     the array for the state vector
         /// </summary>
         private readonly ulong[] mt = new ulong[625];
 
         /// <summary>
-        /// mti==N+1 means mt[N] is not initialized 
+        ///     mti==N+1 means mt[N] is not initialized
         /// </summary>
         private int mti = N + 1;
 
@@ -120,12 +116,13 @@ namespace Utils {
         #region engine
 
         /// <summary>
-        /// setting initial seeds to mt[N] using
-        /// the generator Line 25 of Table 1 in
-        /// [KNUTH 1981, The Art of Computer Programming Vol. 2 (2nd Ed.), pp102] 
+        ///     setting initial seeds to mt[N] using
+        ///     the generator Line 25 of Table 1 in
+        ///     [KNUTH 1981, The Art of Computer Programming Vol. 2 (2nd Ed.), pp102]
         /// </summary>
         /// <param name="seed"></param>
         public void sgenrand(ulong seed) {
+            Debug.Log("Seed ME: " + seed);
             mt[0] = seed & 0xffffffff;
             for (mti = 1; mti < N; mti++)
                 mt[mti] = (69069 * mt[mti - 1]) & 0xffffffff;
@@ -167,7 +164,7 @@ namespace Utils {
 
             //reals: (0,1)-interval
             //return y; for integer generation
-            return ((double) y * FINAL_CONSTANT);
+            return y * FINAL_CONSTANT;
         }
 
         #endregion
@@ -175,39 +172,35 @@ namespace Utils {
         #region public methods
 
         /// <summary>
-        /// Generate a random number between 0 and 1
+        ///     Generate a random number between 0 and 1
         /// </summary>
         /// <returns></returns>
         public double Generate() {
-            return this.genrand();
+            return genrand();
         }
 
         /// <summary>
-        /// Generate an int between two bounds
+        ///     Generate an int between two bounds
         /// </summary>
         /// <param name="lowerBound">The lower bound (inclusive)</param>
         /// <param name="higherBound">The higher bound (inclusive)</param>
         /// <returns></returns>
         public double Generate(int lowerBound, int higherBound) {
-            if (higherBound < lowerBound) {
-                return double.NaN;
-            }
+            if (higherBound < lowerBound) return double.NaN;
 
-            return Convert.ToInt32(Math.Floor(this.Generate(lowerBound * 1.0d, higherBound * 1.0d)));
+            return Convert.ToInt32(Math.Floor(Generate(lowerBound * 1.0d, higherBound * 1.0d)));
         }
 
         /// <summary>
-        /// Generate a double between two bounds
+        ///     Generate a double between two bounds
         /// </summary>
         /// <param name="lowerBound">The lower bound (inclusive)</param>
         /// <param name="higherBound">The higher bound (inclusive)</param>
         /// <returns>The random num or NaN if higherbound is lower than lowerbound</returns>
         public double Generate(double lowerBound, double higherBound) {
-            if (higherBound < lowerBound) {
-                return double.NaN;
-            }
+            if (higherBound < lowerBound) return double.NaN;
 
-            return (this.Generate() * (higherBound - lowerBound + 1)) + lowerBound;
+            return Generate() * (higherBound - lowerBound + 1) + lowerBound;
         }
 
         #endregion

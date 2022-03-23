@@ -32,6 +32,8 @@ sysinfo.txt
 .plastic/
 .vs/
 Output/
+OutputMono/
+Logs/
 
 ###
 # OS generated

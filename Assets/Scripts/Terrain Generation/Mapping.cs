@@ -1,13 +1,14 @@
-﻿using JetBrains.Annotations;
+﻿using System;
+using JetBrains.Annotations;
 
 namespace Terrain_Generation {
-    [System.Serializable]
+    [Serializable]
     public class Mapping {
         public MappingTiles[] tiles;
         // public MappingTiles[] tiles;
     }
 
-    [System.Serializable]
+    [Serializable]
     public class MappingTiles {
         public string name;
         public string asset;

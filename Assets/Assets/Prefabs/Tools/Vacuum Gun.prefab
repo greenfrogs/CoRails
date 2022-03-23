@@ -279,10 +279,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 8516993974805526462}
-  holoRail: {fileID: 0}
+  holoRail: {fileID: 5954666677242277498, guid: 322dc90a37498e04982f05f727398d1e, type: 3}
   currentHolo: {fileID: 0}
-  ground:
-  - {fileID: 0}
+  collectionSphere: {fileID: 8516993974805526462}
+  ground: []
 --- !u!1 &2694639278486119202
 GameObject:
   m_ObjectHideFlags: 0
@@ -448,14 +448,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   respawnPoint: {fileID: 0}
   follow: {fileID: 0}
-  owner: 1
+  owner: 0
   followRespawn: 1
   rb: {fileID: 0}
   mineCoolDown: 1
+  claimed: 0
   soundEffect: {fileID: 0}
   useCustomNetworking: 0
   suctionZone: {fileID: 2195950231343527960}
-  collectionSphere: {fileID: 8516993974805526462}
   inventoryCount: 0
   inventoryItem: 0
   inventoryDisplay: {fileID: 2954463280239493410}
@@ -571,7 +571,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99334c90517fe974487a2b4382126b92, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  suctionManager: {fileID: 0}
+  suctionManager: {fileID: 5571722004038465462}
 --- !u!198 &5131553798749608295
 ParticleSystem:
   m_ObjectHideFlags: 0

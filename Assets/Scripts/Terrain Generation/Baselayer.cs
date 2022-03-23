@@ -5,37 +5,34 @@ using Utils;
 namespace Terrain_Generation {
     public class Baselayer {
         private static readonly float power = 10.0f;
-        private static readonly float[] ratios = new[] {0.08f, 0.84f, 0.08f};
+        private static readonly float[] ratios = {0.08f, 0.84f, 0.08f};
 
-        private static readonly BaseLayerType[] types = new[]
-            {BaseLayerType.Water, BaseLayerType.Grass, BaseLayerType.Cliff};
+        private static readonly BaseLayerType[] types = {BaseLayerType.Water, BaseLayerType.Grass, BaseLayerType.Cliff};
 
-        private float[] bounds = {0f, 0f};
+        private readonly double[] bounds = {0.0, 0.0};
+        private readonly CubicNoise cubicNoise;
+        private int length;
 
         private int width;
-        private int length;
-        private CubicNoise cubicNoise;
 
         public Baselayer(int width, int length) {
             this.width = width;
             this.length = length;
-            int seed = (int)RandomNumberGenerator.Instance.Generate(int.MinValue, int.MaxValue);
+            int seed = (int) RandomNumberGenerator.Instance.Generate(int.MinValue, int.MaxValue);
             cubicNoise = new CubicNoise(seed, 16);
 
-            float[] samples = new float[width * length];
+            double[] samples = new double[width * length];
 
-            for (int x = 0; x < width; x++) {
-                for (int y = 0; y < length; y++) {
-                    samples[x + y * width] = Mathf.Pow(cubicNoise.Sample(x, y), power);
-                }
-            }
+            for (int x = 0; x < width; x++)
+            for (int y = 0; y < length; y++)
+                samples[x + y * width] = Mathf.Pow(cubicNoise.Sample(x, y), power);
 
             samples = samples.OrderBy(a => a).ToArray();
 
             int i = 0;
             int count = 0;
             int type = 0;
-            float sum = ratios[0];
+            double sum = ratios[0];
             while (i < samples.Length && type < bounds.Length) {
                 count += 1;
                 if (count > sum * (width * length)) {
@@ -46,19 +43,18 @@ namespace Terrain_Generation {
 
                 i += 1;
             }
-            
+
             Debug.Log("Bounds calculated: " + StringUtils.ToString(bounds));
         }
 
         public BaseLayerType Sample(int x, int y, bool pass = true) {
             float value = Mathf.Pow(cubicNoise.Sample(x, y), power);
-            BaseLayerType type = BaseLayerType.Cliff;
-            for (int i = 0; i < bounds.Length; i++) {
+            var type = BaseLayerType.Cliff;
+            for (int i = 0; i < bounds.Length; i++)
                 if (value < bounds[i]) {
                     type = types[i];
                     break;
                 }
-            }
 
             return type;
         }

@@ -11,17 +11,13 @@ namespace Terrain_Generation.Visitors.NoiseVisitors {
 
 
         protected override ChunkObject Place(Chunk chunk) {
-            if (chunk.type == BaseLayerType.Water || chunk.properties.ContainsKey("Rock")) {
-                return null;
-            }
+            if (chunk.type == BaseLayerType.Water || chunk.properties.ContainsKey("Rock")) return null;
 
-            ChunkObject chunkObject = new ChunkObject("Tree-" +  RandomNumberGenerator.Instance.Generate(1, 11), 0, 0, 0,
-                Quaternion.Euler(0, (float)RandomNumberGenerator.Instance.Generate(0, 7) * 45, 0));
+            var chunkObject = new ChunkObject("Tree-" + RandomNumberGenerator.Instance.Generate(1, 11), 0, 0, 0,
+                Quaternion.Euler(0, (float) RandomNumberGenerator.Instance.Generate(0, 7) * 45, 0));
 
-            if (chunk.type == BaseLayerType.Cliff) {
-                chunkObject.z = 1;
-            }
-            
+            if (chunk.type == BaseLayerType.Cliff) chunkObject.z = 1;
+
             return chunkObject;
         }
     }

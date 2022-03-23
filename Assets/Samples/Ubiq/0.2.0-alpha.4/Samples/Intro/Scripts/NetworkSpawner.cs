@@ -67,6 +67,13 @@ namespace Ubiq.Samples
             context = NetworkScene.Register(this);
             events = new ContextEventLogger(context);
             roomClient.OnRoomUpdated.AddListener(OnRoomUpdated);
+            roomClient.OnJoinedRoom.AddListener(OnJoinedRoom);
+        }
+
+        private void OnJoinedRoom(IRoom newRoom)
+        {
+            spawned.Clear();
+            OnRoomUpdated(newRoom);
         }
 
         private GameObject Instantiate(int i, NetworkId networkId, bool local)
@@ -114,6 +121,7 @@ namespace Ubiq.Samples
                     var msg = JsonUtility.FromJson<Message>(item.Value);
                     if(!spawned.ContainsKey(msg.networkId))
                     {
+                        Debug.LogWarning($"Spawning persistent network object {item.Key}");
                         Instantiate(msg.catalogueIndex, msg.networkId, false);
                     }
                 }

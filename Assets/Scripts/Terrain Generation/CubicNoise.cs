@@ -4,11 +4,11 @@ namespace Terrain_Generation {
     public sealed class CubicNoise {
         private static readonly int RND_A = 134775813;
         private static readonly int RND_B = 1103515245;
+        private readonly int octave;
+        private readonly int periodx = int.MaxValue;
+        private readonly int periody = int.MaxValue;
 
-        private int seed;
-        private int octave;
-        private int periodx = int.MaxValue;
-        private int periody = int.MaxValue;
+        private readonly int seed;
 
         public CubicNoise(int seed, int octave, int periodx, int periody) {
             this.seed = seed;
@@ -54,7 +54,8 @@ namespace Terrain_Generation {
         }
 
         private static float Randomise(int seed, int x, int y) {
-            return (float) ((((x ^ y) * RND_A) ^ (seed + x)) * (((RND_B * x) << 16) ^ (RND_B * y) - RND_A)) / int.MaxValue;
+            return (float) ((((x ^ y) * RND_A) ^ (seed + x)) * (((RND_B * x) << 16) ^ (RND_B * y - RND_A))) /
+                   int.MaxValue;
         }
 
         private static int Tile(int coordinate, int period) {
@@ -62,9 +63,9 @@ namespace Terrain_Generation {
         }
 
         private static float Interpolate(float a, float b, float c, float d, float x) {
-            float p = (d - c) - (a - b);
+            float p = d - c - (a - b);
 
-            return x * (x * (x * p + ((a - b) - p)) + (c - a)) + b;
+            return x * (x * (x * p + (a - b - p)) + (c - a)) + b;
         }
     }
 }

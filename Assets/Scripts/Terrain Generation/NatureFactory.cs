@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using JetBrains.Annotations;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
-using Object = UnityEngine.Object;
 
 namespace Terrain_Generation {
     public class NatureFactory {
-        private static Dictionary<string, GameObject> assets;
-        private static Dictionary<string, MappingTiles> mappings;
+        private static readonly Dictionary<string, GameObject> assets;
+        private static readonly Dictionary<string, MappingTiles> mappings;
 
         static NatureFactory() {
             Debug.Log("Running Nature Factory");
@@ -16,24 +13,19 @@ namespace Terrain_Generation {
             GameObject[] files = Resources.LoadAll<GameObject>("Nature");
             assets = new Dictionary<string, GameObject>(files.Length);
 
-            foreach (GameObject file in files) {
-                assets.Add(file.name, file);
-            }
+            foreach (GameObject file in files) assets.Add(file.name, file);
 
             Debug.Log("Loading JSON Mapping File");
-            TextAsset jsonFile = Resources.Load<TextAsset>("Nature/mapping");
-            Mapping mapping = JsonUtility.FromJson<Mapping>(jsonFile.text);
+            var jsonFile = Resources.Load<TextAsset>("Nature/mapping");
+            var mapping = JsonUtility.FromJson<Mapping>(jsonFile.text);
             mappings = new Dictionary<string, MappingTiles>(mapping.tiles.Length);
-            foreach (MappingTiles tile in mapping.tiles) {
-                mappings.Add(tile.name, tile);
-            }
+            foreach (MappingTiles tile in mapping.tiles) mappings.Add(tile.name, tile);
         }
 
         public static GameObject Spawn(string name, float x, float y, float z, Quaternion rotation,
             Transform parent = null) {
-
             string assetName = "";
-            
+
             if (mappings.ContainsKey(name)) {
                 assetName = mappings[name].asset;
             }
@@ -48,23 +40,17 @@ namespace Terrain_Generation {
                     : Object.Instantiate(assets[assetName], new Vector3(x, y, z), rotation);
                 gameObject.name = $"gt_{assetName}#{x}:{y}:{z}";
 
-                if (mappings[name].collider) {
-                    gameObject.AddComponent<MeshCollider>();
-                }
+                if (mappings[name].collider) gameObject.AddComponent<MeshCollider>();
 
-                if (mappings[name].tag != "") {
-                    gameObject.tag = mappings[name].tag;
-                }
+                if (mappings[name].tag != "") gameObject.tag = mappings[name].tag;
 
-                if (mappings[name].removeShadows) {
+                if (mappings[name].removeShadows)
                     gameObject.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
-                }
 
                 return gameObject;
             }
-            else {
-                Debug.LogError("Terrain with " + assetName + " could not be found and spawned.");
-            }
+
+            Debug.LogError("Terrain with " + assetName + " could not be found and spawned.");
 
             return null;
         }

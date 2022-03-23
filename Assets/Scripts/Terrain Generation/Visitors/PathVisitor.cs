@@ -1,45 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using Utils;
 using Utils.PriorityQueue;
-using Random = UnityEngine.Random;
 
 namespace Terrain_Generation.Visitors {
     public class PathVisitor : Visitor {
         private readonly float offshoots = 0.06f;
 
         public override void Generate(Chunk[,] chunks) {
-            int seed = (int)RandomNumberGenerator.Instance.Generate(int.MinValue, int.MaxValue);
-            CubicNoise noise = new CubicNoise(seed, 16);
+            int seed = (int) RandomNumberGenerator.Instance.Generate(int.MinValue, int.MaxValue);
+            Debug.Log("Path Visitor: " + seed);
+            var noise = new CubicNoise(seed, 16);
 
             // Generate a 2d representation with noise :)
             float[,] map = new float[chunks.GetLength(0), chunks.GetLength(1)];
-            for (int x = 0; x < chunks.GetLength(0); x++) {
-                for (int y = 0; y < chunks.GetLength(1); y++) {
-                    if (chunks[x, y].type == BaseLayerType.Grass ||
-                        chunks[x, y].properties.ContainsKey("Bridge")) {
-                        map[x, y] = Mathf.Abs(noise.Sample(x, y)) * 10;
-                    }
-                    else {
-                        map[x, y] = 10000;
-                    }
-                }
-            }
+            for (int x = 0; x < chunks.GetLength(0); x++)
+            for (int y = 0; y < chunks.GetLength(1); y++)
+                if (chunks[x, y].type == BaseLayerType.Grass ||
+                    chunks[x, y].properties.ContainsKey("Bridge"))
+                    map[x, y] = Mathf.Abs(noise.Sample(x, y)) * 10;
+                else
+                    map[x, y] = 10000;
 
             // A* Path Finding
-            Vector2Int start = new Vector2Int(chunks.GetLength(0) / 2, 0);
-            Vector2Int end = new Vector2Int(10, chunks.GetLength(1) - 1);
+            var start = new Vector2Int(chunks.GetLength(0) / 2, 0);
+            var end = new Vector2Int(10, chunks.GetLength(1) - 1);
             List<Vector2Int> path = AStar(map, start, end);
 
             for (int i = 0; i < offshoots * chunks.GetLength(1); i++) {
-                Vector2Int startOffshoot = path[(int)RandomNumberGenerator.Instance.Generate(0, path.Count - 1)];
-                Vector2Int endOffshoot = new Vector2Int(
-                    Mathf.Clamp(startOffshoot.x + (int)RandomNumberGenerator.Instance.Generate(-chunks.GetLength(0) / 2, chunks.GetLength(0) / 2 - 1), 0,
+                Vector2Int startOffshoot = path[(int) RandomNumberGenerator.Instance.Generate(0, path.Count - 1)];
+                var endOffshoot = new Vector2Int(
+                    Mathf.Clamp(
+                        startOffshoot.x + (int) RandomNumberGenerator.Instance.Generate(-chunks.GetLength(0) / 2,
+                            chunks.GetLength(0) / 2 - 1), 0,
                         chunks.GetLength(0) - 1),
-                    Mathf.Clamp(startOffshoot.y + (int)RandomNumberGenerator.Instance.Generate(-chunks.GetLength(0) / 2, chunks.GetLength(0) / 2 - 1), 0,
+                    Mathf.Clamp(
+                        startOffshoot.y + (int) RandomNumberGenerator.Instance.Generate(-chunks.GetLength(0) / 2,
+                            chunks.GetLength(0) / 2 - 1), 0,
                         chunks.GetLength(1) - 1));
 
                 List<Vector2Int> pathOffshoot = AStar(map, startOffshoot, endOffshoot);
@@ -59,42 +56,30 @@ namespace Terrain_Generation.Visitors {
                     bool west = path.Contains(new Vector2Int(p.x - 1, p.y));
 
                     if (north && east && south || north && east && west || north && south && west ||
-                        east && west && south) {
+                        east && west && south)
                         chunks[p.x, p.y].AddObject(new ChunkObject("Path-Centre", 0, 0));
-                    }
-                    else if (north && south) {
+                    else if (north && south)
                         chunks[p.x, p.y].AddObject(new ChunkObject("Path", 0, 0, Quaternion.Euler(0, 90, 0)));
-                    }
-                    else if (east && west) {
+                    else if (east && west)
                         chunks[p.x, p.y].AddObject(new ChunkObject("Path", 0, 0));
-                    }
-                    else if (north && east) {
+                    else if (north && east)
                         chunks[p.x, p.y].AddObject(new ChunkObject("Path-Corner", 0, 0, Quaternion.Euler(0, 180, 0)));
-                    }
-                    else if (north && west) {
+                    else if (north && west)
                         chunks[p.x, p.y].AddObject(new ChunkObject("Path-Corner", 0, 0, Quaternion.Euler(0, 90, 0)));
-                    }
-                    else if (east && south) {
+                    else if (east && south)
                         chunks[p.x, p.y].AddObject(new ChunkObject("Path-Corner", 0, 0, Quaternion.Euler(0, 270, 0)));
-                    }
-                    else if (west && south) {
+                    else if (west && south)
                         chunks[p.x, p.y].AddObject(new ChunkObject("Path-Corner", 0, 0, Quaternion.Euler(0, 0, 0)));
-                    }
-                    else if (north) {
+                    else if (north)
                         chunks[p.x, p.y].AddObject(new ChunkObject("Path-End", 0, 0, Quaternion.Euler(0, 270, 0)));
-                    }
-                    else if (east) {
+                    else if (east)
                         chunks[p.x, p.y].AddObject(new ChunkObject("Path-End", 0, 0, Quaternion.Euler(0, 0, 0)));
-                    }
-                    else if (south) {
+                    else if (south)
                         chunks[p.x, p.y].AddObject(new ChunkObject("Path-End", 0, 0, Quaternion.Euler(0, 90, 0)));
-                    }
-                    else if (west) {
+                    else if (west)
                         chunks[p.x, p.y].AddObject(new ChunkObject("Path-End", 0, 0, Quaternion.Euler(0, 180, 0)));
-                    }
-                    else {
+                    else
                         chunks[p.x, p.y].AddObject(new ChunkObject("Debug", 0, 0));
-                    }
                 }
             }
         }
@@ -125,26 +110,16 @@ namespace Terrain_Generation.Visitors {
 
             while (openSet.Count > 0) {
                 Vector2Int current = openSet.Dequeue();
-                if (current == end) {
-                    return ReconstructPath(cameFrom, current);
-                }
+                if (current == end) return ReconstructPath(cameFrom, current);
 
                 List<Vector2Int> directions = new List<Vector2Int>();
-                if (current.x > 0) {
-                    directions.Add(new Vector2Int(current.x - 1, current.y));
-                }
+                if (current.x > 0) directions.Add(new Vector2Int(current.x - 1, current.y));
 
-                if (current.x < map.GetLength(0) - 1) {
-                    directions.Add(new Vector2Int(current.x + 1, current.y));
-                }
+                if (current.x < map.GetLength(0) - 1) directions.Add(new Vector2Int(current.x + 1, current.y));
 
-                if (current.y > 0) {
-                    directions.Add(new Vector2Int(current.x, current.y - 1));
-                }
+                if (current.y > 0) directions.Add(new Vector2Int(current.x, current.y - 1));
 
-                if (current.y < map.GetLength(1) - 1) {
-                    directions.Add(new Vector2Int(current.x, current.y + 1));
-                }
+                if (current.y < map.GetLength(1) - 1) directions.Add(new Vector2Int(current.x, current.y + 1));
 
                 foreach (Vector2Int neighbour in directions) {
                     float tentativeGScore = gScore[current] + map[neighbour.x, neighbour.y];
@@ -152,9 +127,7 @@ namespace Terrain_Generation.Visitors {
                         cameFrom[neighbour] = current;
                         gScore[neighbour] = tentativeGScore;
                         fScore[neighbour] = tentativeGScore + Vector2Int.Distance(neighbour, end);
-                        if (!openSet.Contains(neighbour)) {
-                            openSet.Enqueue(neighbour, fScore[neighbour]);
-                        }
+                        if (!openSet.Contains(neighbour)) openSet.Enqueue(neighbour, fScore[neighbour]);
                     }
                 }
             }
