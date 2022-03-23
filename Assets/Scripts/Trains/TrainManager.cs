@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Ubiq.Messaging;
 using Ubiq.Rooms;
+using Unity.Collections;
 using UnityEngine;
 
 namespace Trains {
@@ -16,6 +17,8 @@ namespace Trains {
         public float distance;
 
         public bool _stop;
+        public bool won;
+        public bool failed;
 
         public NetworkScene networkScene;
 
@@ -25,17 +28,19 @@ namespace Trains {
 
         private RoomClient roomClient;
 
+        public ParticleSystem smokeParticles;
+        public ParticleSystem explosionParticles;
+        public ParticleSystem fireworkParticles;
+
         public bool stop {
             get => _stop;
             set {
                 _stop = value;
-                if (TryGetComponent(out ParticleSystem particleSystem)) {
-                    if (_stop)
-                        particleSystem.Stop();
-                    else {
-                        particleSystem.Play();
-                        timeStart = Time.time;
-                    }
+                if (_stop)
+                    smokeParticles.Stop(false);
+                else {
+                    smokeParticles.Play(false);
+                    timeStart = Time.time;
                 }
             }
         }
@@ -68,9 +73,17 @@ namespace Trains {
                 currentTrack = trackManager.Closest(position.x + currentDirection.x, position.z + currentDirection.z,
                     currentTrack);
 
+                if (currentTrack.y > 56) {
+                    stop = true;
+                    won = true;
+                    fireworkParticles.Play();
+                }
+
                 if (repeatTrack.Contains(currentTrack)) {
                     Debug.LogError("FAILED");
+                    failed = true;
                     stop = true;
+                    explosionParticles.Play(false);
                 }
             }
 
@@ -107,6 +120,11 @@ namespace Trains {
             repeatTrack = msg.RepeatTrack;
             distance = msg.Distance;
             stop = msg.Stop;
+            won = msg.Won;
+            if (won) {
+                fireworkParticles.Play();
+            }
+            failed = msg.Failed;
             ready = true;
         }
 
@@ -122,7 +140,7 @@ namespace Trains {
 
 
             if (!doSend) return;
-            netContext.SendJson(new Message(transform, speed, timeStart, repeatTrack, distance, stop));
+            netContext.SendJson(new Message(transform, speed, timeStart, repeatTrack, distance, stop, won, failed));
         }
 
         private IEnumerator SelectHost() {
@@ -146,6 +164,7 @@ namespace Trains {
         }
 
         private void InitCar(IRoom newRoom) {
+            won = false;
             StartCoroutine(SelectHost());
         }
 
@@ -158,14 +177,18 @@ namespace Trains {
             public List<TrackPiece> RepeatTrack;
             public float Distance;
             public bool Stop;
+            public bool Won;
+            public bool Failed;
 
-            public Message(Transform transform, float speed, float startTime, List<TrackPiece> repeatTrack, float distance, bool stop) {
+            public Message(Transform transform, float speed, float startTime, List<TrackPiece> repeatTrack, float distance, bool stop, bool won, bool failed) {
                 TrainTransform = new TransformMessage(transform);
                 Speed = speed;
                 StartTime = startTime;
                 RepeatTrack = repeatTrack;
                 Distance = distance;
                 Stop = stop;
+                Won = won;
+                Failed = failed;
             }
         }
     }

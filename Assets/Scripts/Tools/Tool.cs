@@ -8,8 +8,10 @@ using Ubiq.XR;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Tools {
-    public class Tool : MonoBehaviour, INetworkComponent, INetworkObject, IGraspable {
+namespace Tools
+{
+    public class Tool : MonoBehaviour, INetworkComponent, INetworkObject, IGraspable
+    {
         private static readonly int SrcBlend = Shader.PropertyToID("_SrcBlend");
         private static readonly int DstBlend = Shader.PropertyToID("_DstBlend");
         private static readonly int ZWrite = Shader.PropertyToID("_ZWrite");
@@ -33,11 +35,13 @@ namespace Tools {
         private IEnumerator resetFollowEnumerator;
         private WorldManager worldManager;
 
-        private void Awake() {
+        private void Awake()
+        {
             if (!TryGetComponent(out Renderer cooldownRenderer)) return;
             originalMaterials = cooldownRenderer.materials.ToList();
             greyedMaterials = new List<Material>();
-            foreach (Material originalMaterial in originalMaterials) {
+            foreach (Material originalMaterial in originalMaterials)
+            {
                 var material = new Material(originalMaterial);
                 Color materialColor = material.color;
                 materialColor.a = 0.2f;
@@ -55,16 +59,19 @@ namespace Tools {
             }
         }
 
-        public void Grasp(Hand controller) {
+        public void Grasp(Hand controller)
+        {
             GraspShared(controller);
         }
 
-        public void Release(Hand controller) {
+        public void Release(Hand controller)
+        {
             ReleaseShared(controller);
         }
 
         // move the tool to the broadcast position, and start the respawn timer if it is unclaimed
-        public void ProcessMessage(ReferenceCountedSceneGraphMessage message) {
+        public void ProcessMessage(ReferenceCountedSceneGraphMessage message)
+        {
             if (useCustomNetworking) return;
 
             var msg = message.FromJson<Message>();
@@ -74,12 +81,14 @@ namespace Tools {
             rb.MovePosition(transform1.position - transform1.localPosition + msg.ToolTransform.position);
             claimed = msg.Claim;
 
-            if (claimed) {
+            if (claimed)
+            {
                 if (resetFollowEnumerator != null) StopCoroutine(resetFollowEnumerator);
                 followRespawn = false;
                 rb.isKinematic = true;
             }
-            else {
+            else
+            {
                 resetFollowEnumerator = ResetFollow();
                 StartCoroutine(resetFollowEnumerator);
                 rb.isKinematic = false;
@@ -90,7 +99,8 @@ namespace Tools {
 
 
         // stop the respawn timer, broadcast claim, and set positions to follow the controller
-        protected void GraspShared(Hand controller) {
+        protected void GraspShared(Hand controller)
+        {
             if (resetFollowEnumerator != null) StopCoroutine(resetFollowEnumerator);
             followRespawn = false;
             follow = controller.transform;
@@ -101,7 +111,8 @@ namespace Tools {
         }
 
         // stop following the controller, start the countdown timer, broadcast release
-        protected void ReleaseShared(Hand controller) {
+        protected void ReleaseShared(Hand controller)
+        {
             follow = null;
             owner = false;
             rb.isKinematic = false;
@@ -111,7 +122,8 @@ namespace Tools {
             if (!useCustomNetworking) ctx.SendJson(new Message(transform, claimed));
         }
 
-        protected void StartShared(NetworkId netID) {
+        protected void StartShared(NetworkId netID)
+        {
             rb = GetComponent<Rigidbody>();
             onScoreEvent = GameObject.Find("Scoring").GetComponent<Scoring>().OnScoreEvent;
 
@@ -120,13 +132,15 @@ namespace Tools {
         }
 
         // wait 5 seconds and respawn at the train
-        protected IEnumerator ResetFollow() {
+        protected IEnumerator ResetFollow()
+        {
             yield return new WaitForSeconds(5);
             if (!claimed) followRespawn = true;
         }
 
         // reset cooldown effects after mining timer is up
-        private IEnumerator ResetCooldown() {
+        private IEnumerator ResetCooldown()
+        {
             yield return new WaitForSeconds(1);
             Debug.Log("reset!");
             mineCoolDown = true;
@@ -135,14 +149,16 @@ namespace Tools {
         }
 
         protected void SharedUpdate(Vector3 initAngles, float xAngle, float yAngle, float zAngle,
-            Vector3 positionOffset) {
+            Vector3 positionOffset)
+        {
             Transform transform1 = transform;
 
             // if the tool has fallen off the map, respawn it at the train
             if (transform1.position.y < -30) followRespawn = true;
 
             // if the tool is respawned, follow the train
-            if (followRespawn) {
+            if (followRespawn)
+            {
                 transform1.position = respawnPoint.transform.position;
                 rb.isKinematic = true;
                 transform1.eulerAngles = initAngles;
@@ -155,26 +171,34 @@ namespace Tools {
             if (follow == null) return;
 
             // if the tool is the owner, follow the controller position/angle and broadcast the new orientation
-            Quaternion rotation = follow.transform.rotation;
+            var rotation = follow.transform.rotation;
             rb.MoveRotation(rotation * Quaternion.Euler(xAngle, yAngle, zAngle));
 
-            Vector3 targetPosition = follow.transform.position +
+            var targetPosition = follow.transform.position +
                                      rotation * Quaternion.Euler(xAngle, yAngle, zAngle) * positionOffset;
-            if (Vector3.Distance(rb.position, targetPosition) > 0.5) rb.position = targetPosition;
-            rb.MovePosition(targetPosition);
+            if (Vector3.Distance(rb.position, targetPosition) > 0.5)
+            {
+                rb.position = targetPosition;
+            }
+            else
+            {
+                rb.MovePosition(targetPosition);
+            }
 
             var msg = new Message(transform, claimed);
             if (!useCustomNetworking) ctx.SendJson(msg);
         }
 
         // attempt to mine an object if it is compatible with the tool, spawn the resource if successful, and start the cooldown
-        protected void HandleCollision(Collision collision, GameObject prefab, string key, ScoreEventType eventType) {
+        protected void HandleCollision(Collision collision, GameObject prefab, string key, ScoreEventType eventType)
+        {
             if (!mineCoolDown || !owner || !collision.gameObject.name.Contains(key)) return;
             // var spawnPos = collision.gameObject.transform.position;
             // Destroy(collision.gameObject);
             // Instantiate(prefab, spawnPos, Quaternion.identity);
 
-            if (TryGetComponent(out AudioSource audioSource)) {
+            if (TryGetComponent(out AudioSource audioSource))
+            {
                 audioSource.PlayOneShot(soundEffect, 1f);
                 Debug.Log("Sound");
             }
@@ -189,11 +213,13 @@ namespace Tools {
 
         [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Local")]
         // broadcast position and whether a player has claimed it
-        private struct Message {
+        private struct Message
+        {
             public TransformMessage ToolTransform;
             public bool Claim;
 
-            public Message(Transform transform, bool claim) {
+            public Message(Transform transform, bool claim)
+            {
                 ToolTransform = new TransformMessage(transform);
                 Claim = claim;
             }

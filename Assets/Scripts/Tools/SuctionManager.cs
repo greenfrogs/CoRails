@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ResourceDrops;
+using Trains;
 using UnityEngine;
 
 namespace Tools {
@@ -13,6 +14,8 @@ namespace Tools {
         public HashSet<Tuple<GameObject, ResourceDropManager>> currentlySucking;
         public List<GameObject> ground;
         private VacuumManager parent;
+        
+        public TrackManager trackManager;
 
         public SuctionManager() {
             currentlySucking = new HashSet<Tuple<GameObject, ResourceDropManager>>();
@@ -55,7 +58,6 @@ namespace Tools {
                     ground.Add(collision.gameObject);
                     AttemptHoloRailProjection();
                 }
-
                 return;
             }
 
@@ -94,7 +96,27 @@ namespace Tools {
             if (parent.inventoryItem == 3 && !parent.placeCoolDown) {
                 int tail = ground.Count - 1;
                 if (ground.Count > 0)
+                {
+                    if (trackManager.Exists((int) ground[tail].transform.position.x,
+                            (int) ground[tail].transform.position.z))
+                    {
+                        DestroyCurrentHolo();
+                        return;
+                    }
+                    
+                    foreach (Transform child in ground[tail].transform)
+                    {
+                        if (child.CompareTag("Untagged"))
+                        {
+                            if (child.name.Contains("tree") || child.name.Contains("stone"))
+                            {
+                                DestroyCurrentHolo();
+                                return;
+                            }
+                        }
+                    }
                     CreateHoloRail(ground[tail].transform.position.x, ground[tail].transform.position.z);
+                }
                 else
                     DestroyCurrentHolo();
             }

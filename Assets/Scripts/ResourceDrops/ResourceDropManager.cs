@@ -7,8 +7,8 @@ using UnityEngine;
 namespace ResourceDrops {
     public class ResourceDropManager : MonoBehaviour, INetworkComponent, INetworkObject, IGraspable, ISpawnable {
         public bool owner;
-
         public string type;
+        private Vector3 lastPublishedPosition;
 
         private NetworkContext ctx;
         private Transform follow;
@@ -21,14 +21,17 @@ namespace ResourceDrops {
 
         // Update is called once per frame
         private void Update() {
-            if (!owner) return;
-            if (follow == null) return;
-            Transform transform1 = transform;
-            Vector3 controllerPosition = follow.transform.position;
-            transform1.position = new Vector3(controllerPosition.x, controllerPosition.y - (float) 0.1,
-                controllerPosition.z);
-            transform1.rotation = follow.transform.rotation;
-            transform1.Rotate(50, 0, 0);
+            // if (!owner) return;
+            if (follow != null)
+            {
+                Transform transform1 = transform;
+                Vector3 controllerPosition = follow.transform.position;
+                transform1.position = new Vector3(controllerPosition.x, controllerPosition.y - (float) 0.1,
+                    controllerPosition.z);
+                transform1.rotation = follow.transform.rotation;
+                transform1.Rotate(50, 0, 0);
+            }
+            if (Vector3.Distance(lastPublishedPosition, transform.position) <= 0.2) return;
             // ctx.SendJson(new TransformMessage(transform));
             SendPositionUpdate();
         }
@@ -56,6 +59,7 @@ namespace ResourceDrops {
             rb.isKinematic = true;
             rb.isKinematic = false;
             worldManager.MoveDrop(name, msg.position);
+            lastPublishedPosition = msg.position;
         }
 
         public NetworkId Id { get; set; }
