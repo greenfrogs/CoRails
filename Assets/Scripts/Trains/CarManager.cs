@@ -57,6 +57,9 @@ namespace Trains {
             Vector3 position = transform.position;
             if (currentTrack?.gameObject == null) currentTrack = null;
             if (currentTrack == null) UpdateTrack();
+            
+            if (currentTrack == null) return;
+            if (trainManager.stop) return;
 
             if (Vector2.Distance(new Vector2(position.x, position.z),
                 new Vector2(currentTrack.x, currentTrack.y)) >= 0.5f) {
@@ -66,7 +69,6 @@ namespace Trains {
             
             if (nextTrack == null) return;
             if (currentTrack == null) return;
-            if (trainManager.stop) return;
 
             
             Vector3 nextTrackLocation = nextTrack.gameObject.transform.position;

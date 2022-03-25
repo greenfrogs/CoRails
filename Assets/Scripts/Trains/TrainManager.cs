@@ -91,10 +91,12 @@ namespace Trains {
             nextNextTrack = trackManager.tracks.Count <= trackIndex + 2 ? null : trackManager.tracks[trackIndex + 2];
 
             if (currentTrack == null) {
-                Debug.LogError("FAILED");
-                failed = true;
                 stop = true;
-                explosionParticles.Play(false);
+                if (!failed) {
+                    Debug.LogError("FAILED");
+                    explosionParticles.Play(false);
+                }
+                failed = true;
             }
             else {
                 if (currentTrack.y > 56) {
@@ -106,14 +108,17 @@ namespace Trains {
         }
 
         private void Update() {
+            if (won) return;
             Vector3 position = transform.position;
             if (currentTrack?.gameObject == null) currentTrack = null;
             if (currentTrack == null) UpdateTrack();
+            if (currentTrack == null) return;
 
-            if (Vector2.Distance(new Vector2(position.x, position.z),
+            if (GetSpeed() * Time.deltaTime > 0f && Vector2.Distance(new Vector2(position.x, position.z),
                 new Vector2(currentTrack.x, currentTrack.y)) >= 0.5f) {
                 trackIndex += 1;
                 UpdateTrack();
+                
             }
             if (nextTrack == null) return;
             if (currentTrack == null) return;
