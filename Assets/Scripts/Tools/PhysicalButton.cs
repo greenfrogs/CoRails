@@ -1,3 +1,4 @@
+using System;
 using Ubiq.Messaging;
 using Ubiq.XR;
 using UnityEngine;
@@ -13,10 +14,13 @@ namespace Tools {
         private Vector3 startingPosition;
         private Quaternion startingRotation;
 
-        private void Start() {
-            ctx = NetworkScene.Register(this);
+        private void Awake() {
             startingPosition = transform.position;
             startingRotation = transform.rotation;
+        }
+
+        private void Start() {
+            ctx = NetworkScene.Register(this);
         }
 
         private void FixedUpdate() {

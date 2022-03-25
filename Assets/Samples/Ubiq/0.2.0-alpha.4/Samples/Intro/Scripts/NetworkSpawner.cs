@@ -117,10 +117,10 @@ namespace Ubiq.Samples
             {
                 if(item.Key.StartsWith("SpawnedObject"))
                 {
-                    Debug.Log(item.Key);
                     var msg = JsonUtility.FromJson<Message>(item.Value);
                     if(!spawned.ContainsKey(msg.networkId))
                     {
+                        Debug.Log($"Spawned '{item.Key}'");
                         Debug.LogWarning($"Spawning persistent network object {item.Key}");
                         Instantiate(msg.catalogueIndex, msg.networkId, false);
                     }

@@ -5,13 +5,15 @@ using UnityEngine;
 
 namespace Console {
     public class DebugController : MonoBehaviour {
+        public static DebugCommand START;
         public static DebugCommand<int, int> CREATE_TRACK;
         public static DebugCommand<int> SET_WOOD, SET_STONE;
         public bool showConsole;
 
         public List<object> commandList;
 
-        public TrackManager trackManager;
+        public TrackManagerSnake trackManager;
+        public TrainManager trainManager;
         public WoodCart woodCart;
         public StoneCart stoneCart;
         private readonly char[] newLine = "\n\r".ToCharArray();
@@ -21,9 +23,11 @@ namespace Console {
         private void Awake() {
             CREATE_TRACK = new DebugCommand<int, int>("track", "Create track at specific location x y", "track",
                 (x, y) => {
-                    trackManager.RemoveTerrain(x, y, true);
-                    trackManager.Add(x, y);
-                    trackManager.BroadcastAdd(x, y);
+                    if (trackManager.CanAdd(x, y)) {
+                        trackManager.RemoveTerrain(x, y, true);
+                        trackManager.Add(x, y);
+                        trackManager.BroadcastAdd(x, y);
+                    }
                 });
 
             SET_WOOD = new DebugCommand<int>("wood", "Set count for wood", "wood",
@@ -31,10 +35,14 @@ namespace Console {
             SET_STONE = new DebugCommand<int>("stone", "Set count for stone", "stone",
                 x => { stoneCart.StoneCount = x; });
 
+            START = new DebugCommand("start", "toggle train", "start",
+                () => { trainManager.stop = !trainManager.stop; });
+            
             commandList = new List<object> {
                 CREATE_TRACK,
                 SET_WOOD,
-                SET_STONE
+                SET_STONE,
+                START
             };
         }
 

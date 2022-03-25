@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,15 +6,21 @@ using Ubiq.Messaging;
 using Ubiq.Rooms;
 using Unity.Collections;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Trains {
     public class TrainManager : MonoBehaviour, INetworkComponent, INetworkObject {
-        public TrackManager trackManager;
+        public TrackManagerSnake trackManager;
+        public int trackIndex;
+        private int startingTrackIndex;
 
         public float speed = 0.2f;
-        public float timeStart = 0f;
+        public float timeStart;
+        public AnimationCurve rotateCurve;
 
-        public TrackPiece currentTrack;
+        public TrackPieceSnake currentTrack;
+        public TrackPieceSnake nextTrack;
+        public TrackPieceSnake nextNextTrack;
         public float distance;
 
         public bool _stop;
@@ -46,61 +53,94 @@ namespace Trains {
         }
 
         private void Awake() {
+            startingTrackIndex = trackIndex;
             networkScene = (NetworkScene) FindObjectOfType(typeof(NetworkScene));
             roomClient = networkScene.GetComponent<RoomClient>();
             roomClient.OnPeerAdded.AddListener(SendTrainState);
             roomClient.OnJoinedRoom.AddListener(InitCar);
         }
 
+        public void Reset() {
+            trackIndex = startingTrackIndex;
+            speed = 0.2f;
+            timeStart = 0f;
+
+            currentTrack = null;
+            distance = 0f;
+
+            _stop = true;
+            won = false;
+            failed = false;
+
+
+            ready = false;
+            repeatTrack = new List<TrackPiece>();
+            Start();
+        }
+
         private void Start() {
             currentTrack = null;
             repeatTrack = new List<TrackPiece>();
             netContext = NetworkScene.Register(this);
+            transform.position = trackManager.tracks[trackIndex].gameObject.transform.position;
         }
 
-        private void Update() {
-            Vector3 position = transform.position;
-            if (currentTrack?.gameObject == null) currentTrack = null;
-            currentTrack ??= trackManager.Closest(position.x, position.z + 0.1f, currentTrack);
+        private void UpdateTrack() {
+            currentTrack = trackManager.tracks.Count <= trackIndex ? null : trackManager.tracks[trackIndex];
+            nextTrack = trackManager.tracks.Count <= trackIndex + 1 ? null : trackManager.tracks[trackIndex + 1];
+            nextNextTrack = trackManager.tracks.Count <= trackIndex + 2 ? null : trackManager.tracks[trackIndex + 2];
 
-            if (Vector2.Distance(new Vector2(position.x, position.z),
-                new Vector2(currentTrack.x, currentTrack.y)) < 0.01f) {
-                Vector3 currentDirection =
-                    (Vector3.MoveTowards(position, currentTrack.gameObject.transform.position, 0.1f) - position) * 2;
-
-                repeatTrack.Add(currentTrack);
-
-                currentTrack = trackManager.Closest(position.x + currentDirection.x, position.z + currentDirection.z,
-                    currentTrack);
-
+            if (currentTrack == null) {
+                Debug.LogError("FAILED");
+                failed = true;
+                stop = true;
+                explosionParticles.Play(false);
+            }
+            else {
                 if (currentTrack.y > 56) {
                     stop = true;
                     won = true;
                     fireworkParticles.Play();
                 }
-
-                if (repeatTrack.Contains(currentTrack)) {
-                    Debug.LogError("FAILED");
-                    failed = true;
-                    stop = true;
-                    explosionParticles.Play(false);
-                }
             }
+        }
 
-            distance = Vector2.Distance(new Vector2(position.x, position.z),
-                new Vector2(currentTrack.x, currentTrack.y));
+        private void Update() {
+            Vector3 position = transform.position;
+            if (currentTrack?.gameObject == null) currentTrack = null;
+            if (currentTrack == null) UpdateTrack();
 
-
+            if (Vector2.Distance(new Vector2(position.x, position.z),
+                new Vector2(currentTrack.x, currentTrack.y)) >= 0.5f) {
+                trackIndex += 1;
+                UpdateTrack();
+            }
+            if (nextTrack == null) return;
+            if (currentTrack == null) return;
             if (stop) return;
-            
-            float step = GetSpeed() * Time.deltaTime;
-            transform.position = Vector3.MoveTowards(position, currentTrack.gameObject.transform.position, step);
 
-            float rotationStep = speed * 10 * Time.deltaTime;
-            Quaternion lookAt =
-                Quaternion.LookRotation((currentTrack.gameObject.transform.position - position).normalized);
-            lookAt *= Quaternion.Euler(0, 270, 0);
-            transform.rotation = Quaternion.Slerp(transform.rotation, lookAt, rotationStep);
+            
+            Vector3 nextTrackLocation = nextTrack.gameObject.transform.position;
+            // calculates offset of position of the entrypoint of the next rail (from the next rail's center)
+            Vector3 offset = Quaternion.Euler(0, ((int)nextTrack.connections[0] + 0) % 4 * 90f, 0) * Vector3.forward * 0.5f;
+            // Debug.Log($"Original target: {nextTrackLocation}, offset: {offset}, newTarget: {nextTrackLocation + offset}");
+            nextTrackLocation += offset;
+
+            float step = GetSpeed() * Time.deltaTime;
+            transform.position = Vector3.MoveTowards(position, nextTrackLocation, step);
+            
+            if (currentTrack.connections.Sum(x=> (int)x) % 2 == 0) return;  // track is straight
+            bool isNorthSouth = (int)currentTrack.connections[1] % 2 == 0;  // exit of turn is north or south
+
+            Vector3 localTrackOffset = currentTrack.gameObject.transform.position - position;
+            double rotationDegrees = -Math.Atan2(localTrackOffset.x * (isNorthSouth? -1 : 1), localTrackOffset.z) * 180 / Math.PI;
+            rotationDegrees *= isNorthSouth ? -1 : 1;
+            rotationDegrees += isNorthSouth ? 180 : 0;
+            rotationDegrees %= 360;
+            int rotationQuadrant = (int) rotationDegrees / 90;
+            float rotationOffset = rotateCurve.Evaluate((float)(Math.Abs(rotationDegrees) % 90));
+
+            transform.rotation = Quaternion.Euler(0, rotationQuadrant * 90 + Math.Sign(rotationDegrees) * rotationOffset, 0) * Quaternion.Euler(0, 270, 0);
         }
 
         public float GetSpeed() {
@@ -160,6 +200,7 @@ namespace Trains {
             if (roomHasPeers)
                 yield break; // don't destroy terrain, peer(s) exist so wait for initState to be sent by someone else
 
+            Reset();
             ready = true; // we just joined (created) an empty room, we get to set the room's seed.
         }
 

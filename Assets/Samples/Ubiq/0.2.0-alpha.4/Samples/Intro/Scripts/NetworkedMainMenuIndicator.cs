@@ -134,6 +134,8 @@ namespace Ubiq.Samples
             transform.rotation = state[0].rotation;
         }
 
-        void ISpawnable.OnSpawned(bool local) { }
+        void ISpawnable.OnSpawned(bool local) {
+            gameObject.name = $"Menu Indicator#{Id}";
+        }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Linq;
 using Ubiq.Messaging;
@@ -7,55 +8,89 @@ using UnityEngine;
 namespace Trains {
     public class CarManager : MonoBehaviour, INetworkComponent, INetworkObject {
         public TrainManager trainManager;
-        public TrackManager trackManager;
+        public TrackManagerSnake trackManager;
+        public int trackIndex;
+        private int startingTrackIndex;
 
-        public TrackPiece currentTrack;
+        
+        public TrackPieceSnake currentTrack;
+        public TrackPieceSnake nextTrack;
+        public TrackPieceSnake nextNextTrack;
+        public float distance;
         public uint presetID;
         public NetworkScene networkScene;
         public bool ready;
         private NetworkContext netContext;
 
         private RoomClient roomClient;
+        
 
         private void Awake() {
+            startingTrackIndex = trackIndex;
             networkScene = (NetworkScene) FindObjectOfType(typeof(NetworkScene));
             roomClient = networkScene.GetComponent<RoomClient>();
             roomClient.OnPeerAdded.AddListener(SendCarState);
             roomClient.OnJoinedRoom.AddListener(InitTrain);
         }
+        
+        public void Reset() {
+            currentTrack = null;
+            ready = false;
+            Start();
+        }
 
 
         private void Start() {
+            trackIndex = startingTrackIndex;
             currentTrack = null;
             netContext = NetworkScene.Register(this);
+            transform.position = trackManager.tracks[trackIndex].gameObject.transform.position;
+        }
+        
+        private void UpdateTrack() {
+            currentTrack = trackManager.tracks.Count <= trackIndex ? null : trackManager.tracks[trackIndex];
+            nextTrack = trackManager.tracks.Count <= trackIndex + 1 ? null : trackManager.tracks[trackIndex + 1];
+            nextNextTrack = trackManager.tracks.Count <= trackIndex + 2 ? null : trackManager.tracks[trackIndex + 2];
         }
 
         private void Update() {
             Vector3 position = transform.position;
             if (currentTrack?.gameObject == null) currentTrack = null;
-            currentTrack ??= trainManager.trackManager.Closest(position.x, position.z + 0.1f, currentTrack);
+            if (currentTrack == null) UpdateTrack();
 
             if (Vector2.Distance(new Vector2(position.x, position.z),
-                new Vector2(currentTrack.x, currentTrack.y)) < 0.01f) {
-                Vector3 currentDirection =
-                    (Vector3.MoveTowards(position, currentTrack.gameObject.transform.position, 0.1f) - position) * 2;
-
-
-                currentTrack = trainManager.trackManager.Closest(position.x + currentDirection.x,
-                    position.z + currentDirection.z,
-                    currentTrack);
+                new Vector2(currentTrack.x, currentTrack.y)) >= 0.5f) {
+                trackIndex += 1;
+                UpdateTrack();
             }
-
+            
+            if (nextTrack == null) return;
+            if (currentTrack == null) return;
             if (trainManager.stop) return;
 
-            float step = trainManager.GetSpeed() * Time.deltaTime;
-            transform.position = Vector3.MoveTowards(position, currentTrack.gameObject.transform.position, step);
+            
+            Vector3 nextTrackLocation = nextTrack.gameObject.transform.position;
+            // calculates offset of position of the entrypoint of the next rail (from the next rail's center)
+            Vector3 offset = Quaternion.Euler(0, ((int)nextTrack.connections[0] + 0) % 4 * 90f, 0) * Vector3.forward * 0.5f;
+            // Debug.Log($"Original target: {nextTrackLocation}, offset: {offset}, newTarget: {nextTrackLocation + offset}");
+            nextTrackLocation += offset;
+            
 
-            float rotationStep = trainManager.speed * 10 * Time.deltaTime;
-            Quaternion lookAt =
-                Quaternion.LookRotation((currentTrack.gameObject.transform.position - position).normalized);
-            lookAt *= Quaternion.Euler(-90, 270, 0);
-            transform.rotation = Quaternion.Slerp(transform.rotation, lookAt, rotationStep);
+            float step = trainManager.GetSpeed() * Time.deltaTime;
+            transform.position = Vector3.MoveTowards(position, nextTrackLocation, step);
+
+            if (currentTrack.connections.Sum(x=> (int)x) % 2 == 0) return;  // track is straight
+            bool isNorthSouth = (int)currentTrack.connections[1] % 2 == 0;  // exit of turn is north or south
+
+            Vector3 localTrackOffset = currentTrack.gameObject.transform.position - position;
+            double rotationDegrees = -Math.Atan2(localTrackOffset.x * (isNorthSouth? -1 : 1), localTrackOffset.z) * 180 / Math.PI;
+            rotationDegrees *= isNorthSouth ? -1 : 1;
+            rotationDegrees += isNorthSouth ? 180 : 0;
+            rotationDegrees %= 360;
+            int rotationQuadrant = (int) rotationDegrees / 90;
+            float rotationOffset = trainManager.rotateCurve.Evaluate((float)(Math.Abs(rotationDegrees) % 90));
+
+            transform.rotation = Quaternion.Euler(0, rotationQuadrant * 90 + Math.Sign(rotationDegrees) * rotationOffset, 0) * Quaternion.Euler(-90, 270, 0);
         }
 
         public void ProcessMessage(ReferenceCountedSceneGraphMessage message) {
@@ -97,6 +132,7 @@ namespace Trains {
 
             if (roomHasPeers)
                 yield break; // don't destroy terrain, peer(s) exist so wait for initState to be sent by someone else
+            Reset();
             ready = true; // we just joined (created) an empty room, we get to set the room's seed.
         }
 

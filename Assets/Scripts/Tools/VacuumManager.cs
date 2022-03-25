@@ -14,7 +14,7 @@ namespace Tools {
         public int inventoryCount;
         public int inventoryItem; // 0 = None, 1 = log, 2 = rock, 3 = rail
         public TextMeshPro inventoryDisplay;
-        public TrackManager trackManager;
+        public TrackManagerSnake trackManager;
         public bool placeCoolDown; // false = able to place, true = on cooldown from previously sucking
 
         private NetworkContext ctx;

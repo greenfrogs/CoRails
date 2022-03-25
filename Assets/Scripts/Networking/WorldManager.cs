@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using ResourceDrops;
 using Ubiq.Messaging;
 using Ubiq.Rooms;
 using Ubiq.Samples;
@@ -30,6 +31,7 @@ namespace Networking {
 
 
         private RoomClient roomClient;
+        private Scoring.ScoringEvent onScoreEvent;
 
         private Terrain terrainGenerationComponent;
         private int worldInitState;
@@ -48,6 +50,7 @@ namespace Networking {
             OnWorldUpdate = new WorldUpdateEvent();
             OnWorldUpdate.AddListener(ProcessWorldUpdate);
             netContext = NetworkScene.Register(this);
+            onScoreEvent = GameObject.Find("Scoring").GetComponent<Scoring>().OnScoreEvent;
             Debug.Log("[WorldManager] Hello world!");
         }
 
@@ -178,15 +181,21 @@ namespace Networking {
             GameObject toRemoveGameObject = GameObject.Find(toRemove);
             if (toRemove == null || removedObjects.ContainsKey(toRemove) && removedObjects[toRemove].Item2) return null;
 
+
             string newSpawnedObjectName = null;
             if (toSpawn != null) // only local instance has toSpawn set
             {
                 GameObject spawnedObject = NetworkSpawner.SpawnPersistent(this, toSpawn);
-                newSpawnedObjectName = $"SpawnedObject-{((INetworkObject) spawnedObject.GetSpawnableInChildren()).Id}";
+                newSpawnedObjectName = $"SpawnedObject-{((INetworkObject)spawnedObject.GetSpawnableInChildren()).Id}";
                 Vector3 position = toRemoveGameObject.transform.position;
                 resDropPos[newSpawnedObjectName] = position;
                 moveQueue.Enqueue(newSpawnedObjectName);
             }
+
+            if (toRemoveGameObject.TryGetComponent(out ResourceDropManager resourceDropManager))
+                onScoreEvent.Invoke(resourceDropManager.type == "wood"
+                    ? ScoreEventType.WoodPickUp
+                    : ScoreEventType.StonePickUp);
 
             Destroy(toRemoveGameObject);
 
@@ -194,7 +203,7 @@ namespace Networking {
         }
 
         private void DoDestroy() {
-            // make a destroylocal and destroyfromremote
+            // make a DestroyLocal and DestroyRemote
             if (!ready || wmEventQueue.Count == 0) return;
             (string toDestroy, GameObject toSpawn, bool isLocal) = wmEventQueue.Dequeue();
             Debug.Log($"Processing {(isLocal ? "local" : "remote")} world event");
@@ -202,7 +211,6 @@ namespace Networking {
             string newSpawnedObjectName = AddRemovedObject(toDestroy, toSpawn);
             // if (newSpawnedObjectName == null || !isLocal) return;
 
-            //ksdjhdkusavhgidusof bgioudsgyv98ewrnv97854etghbn092456tv45298bntv872t678
             if (!isLocal) return;
             removedObjects[toDestroy] =
                 new Tuple<string, bool>(newSpawnedObjectName,
@@ -248,9 +256,7 @@ namespace Networking {
             Debug.Log(a);
         }
 
-        private void
-            ProcessWorldUpdate(GameObject updatedGameObject, GameObject dropPrefab) // could work on these var names
-        {
+        private void ProcessWorldUpdate(GameObject updatedGameObject, GameObject dropPrefab) {
             Debug.LogWarning("ONWORLDUPDATE EVENT CALLBACK");
             Debug.LogWarning($"local: destroy '{updatedGameObject.name}'");
             QueueWorldUpdate(true, updatedGameObject.name, dropPrefab);

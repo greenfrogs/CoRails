@@ -136,7 +136,7 @@ PlayerSettings:
     16:10: 1
     16:9: 1
     Others: 1
-  bundleVersion: 1.0
+  bundleVersion: 0.2
   preloadedAssets:
   - {fileID: 0}
   - {fileID: 0}
@@ -176,8 +176,6 @@ PlayerSettings:
   - {fileID: 0}
   - {fileID: 11400000, guid: 21de8d80949766a41b2cdeb85b3acc4e, type: 2}
   - {fileID: -3079427081336469492, guid: 7cd485b203692be40baf8fd821149e96, type: 2}
-  - {fileID: 0}
-  - {fileID: -5622622871546093235, guid: 94fd0e01e0a2d494ba786391d27899fc, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -815,8 +813,8 @@ PlayerSettings:
   cloudServicesEnabled:
     Build: 0
     Collab: 0
-    Game Performance: 1
-    Legacy Analytics: 1
+    Game Performance: 0
+    Legacy Analytics: 0
     Purchasing: 0
     UDP: 0
     UNet: 1

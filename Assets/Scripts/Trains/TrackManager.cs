@@ -214,9 +214,8 @@ namespace Trains {
 
         private bool UpdatePosition(int x, int y) {
             TrackPiece piece = null;
-            foreach (TrackPiece trackPiece in tracks)
-                if (trackPiece.x == x && trackPiece.y == y)
-                    piece = trackPiece;
+            foreach (var trackPiece in tracks.Where(trackPiece => trackPiece.x == x && trackPiece.y == y))
+                piece = trackPiece;
 
             if (piece == null) return false;
 

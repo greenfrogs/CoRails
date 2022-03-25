@@ -137,6 +137,8 @@ public class StoneCart : MonoBehaviour, INetworkComponent, INetworkObject {
 
         if (roomHasPeers)
             yield break; // don't destroy terrain, peer(s) exist so wait for initState to be sent by someone else
+        stoneCount = 0;
+        UpdateStone();
         ready = true; // we just joined (created) an empty room, we get to set the room's seed.
     }
 

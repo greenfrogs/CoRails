@@ -9,7 +9,7 @@ using Random = UnityEngine.Random;
 
 namespace Terrain_Generation {
     public class Terrain : MonoBehaviour {
-        public TrackManager trackManager;
+        public TrackManagerSnake trackManager;
         
         public int width;
         public int length;

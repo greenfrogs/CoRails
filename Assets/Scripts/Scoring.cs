@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Trains;
@@ -48,6 +49,7 @@ public class Scoring : MonoBehaviour, INetworkComponent, INetworkObject {
         OnScoreEvent.AddListener(UpdateScore);
         roomClient = GameObject.Find("Network Scene with Social").GetComponent<RoomClient>();
         roomClient.OnPeerAdded.AddListener(SendScore);
+        roomClient.OnJoinedRoom.AddListener(InitState);
     }
 
     private void Start() {
@@ -129,6 +131,28 @@ public class Scoring : MonoBehaviour, INetworkComponent, INetworkObject {
         };
         Debug.Log(message);
         netContext.SendJson(message);
+    }
+
+    private IEnumerator SelectHost() {
+        const int timeoutMax = 5; // give 500ms for initializing world sync
+        bool roomHasPeers = false;
+        for (int timeoutTicker = 0; timeoutTicker < timeoutMax; timeoutTicker++) {
+            if (roomClient.Peers.Any()) // waiting for peers to join within timeout period
+            {
+                roomHasPeers = true;
+                break;
+            }
+
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        if (roomHasPeers)
+            yield break; // don't destroy terrain, peer(s) exist so wait for initState to be sent by someone else
+        Reset(); // we just joined (created) an empty room, we get to set the room's seed.
+    }
+
+    private void InitState(IRoom newRoom) {
+        StartCoroutine(SelectHost());
     }
 
     private void UpdateScore(ScoreEventType eventType) {

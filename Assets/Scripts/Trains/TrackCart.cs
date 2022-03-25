@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using Tools;
 using Ubiq.Messaging;
@@ -149,6 +150,9 @@ public class TrackCart : MonoBehaviour, INetworkComponent, INetworkObject {
 
         if (roomHasPeers)
             yield break; // don't destroy terrain, peer(s) exist so wait for initState to be sent by someone else
+        
+        trackCount = 0;
+        UpdateTrack();
         ready = true; // we just joined (created) an empty room, we get to set the room's seed.
     }
 

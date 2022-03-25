@@ -8,6 +8,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/CoRails.unity
     guid: e92e3f47c7d52054685875ddb94feeba
+  - enabled: 1
+    path: Assets/Scenes/SampleScene.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: 21de8d80949766a41b2cdeb85b3acc4e, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 94fd0e01e0a2d494ba786391d27899fc, type: 2}

@@ -152,6 +152,8 @@ public class WoodCart : MonoBehaviour, INetworkComponent, INetworkObject {
 
         if (roomHasPeers)
             yield break; // don't destroy terrain, peer(s) exist so wait for initState to be sent by someone else
+        woodCount = 0;
+        UpdateWood();
         ready = true; // we just joined (created) an empty room, we get to set the room's seed.
     }
 

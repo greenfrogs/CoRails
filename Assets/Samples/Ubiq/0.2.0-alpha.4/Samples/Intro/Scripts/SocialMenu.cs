@@ -83,6 +83,18 @@ namespace Ubiq.Samples
             state = State.Closed;
             OnStateChange.Invoke(this,state);
         }
+        
+        public void Disable()
+        {
+            foreach (Transform child in transform) child.gameObject.SetActive(false);
+            OnDisable();
+        }
+        
+        private void Enable()  // could be made public
+        {
+            foreach (Transform child in transform) child.gameObject.SetActive(true);
+            OnEnable();
+        }
 
         public void Request ()
         {
@@ -90,7 +102,7 @@ namespace Ubiq.Samples
 
             transform.position = cam.TransformPoint(spawnRelativeTransform.localPosition);
             transform.rotation = cam.rotation * spawnRelativeTransform.localRotation;
-            gameObject.SetActive(true);
+            Enable();
         }
     }
 }

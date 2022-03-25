@@ -144,6 +144,11 @@ namespace Ubiq.XR
                 {
                     item.TryGetFeatureValue(CommonUsages.primary2DAxis, out Joystick);
                 }
+
+                // foreach (var item in controllers)
+                // {
+                //     Debug.Log($"Controller device manufacturer: {item.manufacturer}");
+                // }
             }
 
             TriggerPress.Update(TriggerState);

@@ -22,6 +22,7 @@ namespace Tools
         public Rigidbody rb;
         public bool mineCoolDown = true;
         public bool claimed;
+        private Vector3 lastBroadcastPosition;
 
         public AudioClip soundEffect;
         public bool useCustomNetworking;
@@ -77,8 +78,10 @@ namespace Tools
             var msg = message.FromJson<Message>();
 
             Transform transform1 = transform;
-            rb.MoveRotation(msg.ToolTransform.rotation);
-            rb.MovePosition(transform1.position - transform1.localPosition + msg.ToolTransform.position);
+            // rb.MoveRotation(msg.ToolTransform.rotation);
+            // rb.MovePosition(transform1.position - transform1.localPosition + msg.ToolTransform.position);
+            transform1.rotation = msg.ToolTransform.rotation;
+            transform1.position = transform1.position - transform1.localPosition + msg.ToolTransform.position;
             claimed = msg.Claim;
 
             if (claimed)
@@ -107,7 +110,7 @@ namespace Tools
             rb.isKinematic = true;
             owner = true;
             claimed = true;
-            if (!useCustomNetworking) ctx.SendJson(new Message(transform, claimed));
+            if (!useCustomNetworking)  BroadcastMessage(new Message(transform, claimed));
         }
 
         // stop following the controller, start the countdown timer, broadcast release
@@ -119,7 +122,7 @@ namespace Tools
             resetFollowEnumerator = ResetFollow();
             StartCoroutine(resetFollowEnumerator);
             claimed = false;
-            if (!useCustomNetworking) ctx.SendJson(new Message(transform, claimed));
+            if (!useCustomNetworking)  BroadcastMessage(new Message(transform, claimed));
         }
 
         protected void StartShared(NetworkId netID)
@@ -139,10 +142,10 @@ namespace Tools
         }
 
         // reset cooldown effects after mining timer is up
-        private IEnumerator ResetCooldown()
+        private IEnumerator ResetCooldown(float cooldownDuration = 1.0f)
         {
-            yield return new WaitForSeconds(1);
-            Debug.Log("reset!");
+            yield return new WaitForSeconds(cooldownDuration);
+            Debug.Log($"[{GetType()}] Cooldown expired ({cooldownDuration})");
             mineCoolDown = true;
             if (TryGetComponent(out Renderer cooldownRenderer))
                 cooldownRenderer.materials = originalMaterials.ToArray();
@@ -154,7 +157,7 @@ namespace Tools
             Transform transform1 = transform;
 
             // if the tool has fallen off the map, respawn it at the train
-            if (transform1.position.y < -30) followRespawn = true;
+            if (transform1.position.y < -10) followRespawn = true;
 
             // if the tool is respawned, follow the train
             if (followRespawn)
@@ -171,22 +174,25 @@ namespace Tools
             if (follow == null) return;
 
             // if the tool is the owner, follow the controller position/angle and broadcast the new orientation
-            var rotation = follow.transform.rotation;
+            Quaternion rotation = follow.transform.rotation;
             rb.MoveRotation(rotation * Quaternion.Euler(xAngle, yAngle, zAngle));
 
-            var targetPosition = follow.transform.position +
+            Vector3 targetPosition = follow.transform.position +
                                      rotation * Quaternion.Euler(xAngle, yAngle, zAngle) * positionOffset;
             if (Vector3.Distance(rb.position, targetPosition) > 0.5)
             {
+                mineCoolDown = false;
+                StartCoroutine(ResetCooldown(0.2f));
+                rb.isKinematic = !rb.isKinematic;
                 rb.position = targetPosition;
+                rb.isKinematic = !rb.isKinematic;
             }
             else
             {
                 rb.MovePosition(targetPosition);
             }
 
-            var msg = new Message(transform, claimed);
-            if (!useCustomNetworking) ctx.SendJson(msg);
+            if (!useCustomNetworking)  BroadcastMessage(new Message(transform, claimed));
         }
 
         // attempt to mine an object if it is compatible with the tool, spawn the resource if successful, and start the cooldown
@@ -209,6 +215,11 @@ namespace Tools
             StartCoroutine(ResetCooldown());
             if (TryGetComponent(out Renderer toolRenderer)) toolRenderer.materials = greyedMaterials.ToArray();
             onScoreEvent.Invoke(eventType);
+        }
+
+        private void BroadcastMessage(Message message) {
+            ctx.SendJson(message);
+            lastBroadcastPosition = message.ToolTransform.position;
         }
 
         [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Local")]

@@ -115,7 +115,7 @@ namespace Prefabs.Player
             // Update the foot position. This is done by pulling the feet using a rubber band.
             // Decoupling the feet in this way allows the user to do things like lean over edges, when the ground check is enabled.
             // This can be effectively disabled by setting the animation curve to a constant high value.
-
+            
             foreach (var item in handControllers)
             {
                 if (item.Right)

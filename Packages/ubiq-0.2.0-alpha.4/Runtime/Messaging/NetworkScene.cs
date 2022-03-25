@@ -112,8 +112,8 @@ namespace Ubiq.Messaging
                 if (rootNetworkScene == null)
                 {
                     rootNetworkScene = this;
-                    DontDestroyOnLoad(gameObject);
-                    Extensions.MonoBehaviourExtensions.DontDestroyOnLoadGameObjects.Add(gameObject);
+                    // DontDestroyOnLoad(gameObject);
+                    // Extensions.MonoBehaviourExtensions.DontDestroyOnLoadGameObjects.Add(gameObject);
                 }
                 else // Only one networkscene can exist at the top level of the hierarchy
                 {

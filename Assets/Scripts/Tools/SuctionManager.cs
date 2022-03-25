@@ -8,14 +8,16 @@ namespace Tools {
     public class SuctionManager : MonoBehaviour {
         public GameObject target;
         public GameObject holoRail; // holographic rail prefab
+        public GameObject holoRailError; // holographic rail prefab
         public GameObject currentHolo; // currently displayed rail hologram
+        public GameObject errorHolo; // currently displayed rail hologram
         public GameObject collectionSphere;
 
         public HashSet<Tuple<GameObject, ResourceDropManager>> currentlySucking;
         public List<GameObject> ground;
         private VacuumManager parent;
-        
-        public TrackManager trackManager;
+
+        public TrackManagerSnake trackManager;
 
         public SuctionManager() {
             currentlySucking = new HashSet<Tuple<GameObject, ResourceDropManager>>();
@@ -48,6 +50,7 @@ namespace Tools {
             currentlySucking.Clear();
             ground.Clear();
             DestroyCurrentHolo();
+            DestroyErrorHolo();
             collectionSphere.SetActive(false);
         }
 
@@ -58,6 +61,7 @@ namespace Tools {
                     ground.Add(collision.gameObject);
                     AttemptHoloRailProjection();
                 }
+
                 return;
             }
 
@@ -83,6 +87,11 @@ namespace Tools {
             DestroyCurrentHolo();
             currentHolo = Instantiate(holoRail, new Vector3(x, 0, z), Quaternion.Euler(-90, 0, 0));
         }
+        
+        public void CreateErrorHoloRail(float x, float z) {
+            DestroyErrorHolo();
+            errorHolo = Instantiate(holoRailError, new Vector3(x, 0, z), Quaternion.Euler(-90, 0, 0));
+        }
 
         public void DestroyCurrentHolo() {
             if (currentHolo != null) {
@@ -91,34 +100,48 @@ namespace Tools {
             }
         }
 
+        public void DestroyErrorHolo() {
+            if (errorHolo != null) {
+                Destroy(errorHolo);
+                errorHolo = null;
+            }
+        }
+
         // Try to place a holographic rail at the latest collided ground object, provided you are able to place a rail
         public void AttemptHoloRailProjection() {
             if (parent.inventoryItem == 3 && !parent.placeCoolDown) {
                 int tail = ground.Count - 1;
-                if (ground.Count > 0)
-                {
+                if (ground.Count > 0) {
                     if (trackManager.Exists((int) ground[tail].transform.position.x,
-                            (int) ground[tail].transform.position.z))
-                    {
+                            (int) ground[tail].transform.position.z)) {
                         DestroyCurrentHolo();
                         return;
                     }
-                    
-                    foreach (Transform child in ground[tail].transform)
-                    {
-                        if (child.CompareTag("Untagged"))
-                        {
-                            if (child.name.Contains("tree") || child.name.Contains("stone"))
-                            {
+
+                    if (!trackManager.CanAdd((int) ground[tail].transform.position.x,
+                        (int) ground[tail].transform.position.z)) {
+                        DestroyCurrentHolo();
+                        CreateErrorHoloRail(ground[tail].transform.position.x, ground[tail].transform.position.z);
+                        return;
+                    }
+
+                    foreach (Transform child in ground[tail].transform) {
+                        if (child.CompareTag("Untagged")) {
+                            if (child.name.Contains("tree") || child.name.Contains("stone")) {
                                 DestroyCurrentHolo();
+                                CreateErrorHoloRail(ground[tail].transform.position.x, ground[tail].transform.position.z);
                                 return;
                             }
                         }
                     }
+                    
+                    DestroyErrorHolo();
                     CreateHoloRail(ground[tail].transform.position.x, ground[tail].transform.position.z);
                 }
-                else
+                else {
                     DestroyCurrentHolo();
+                    DestroyErrorHolo();
+                }
             }
         }
     }
