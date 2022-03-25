@@ -50,7 +50,7 @@ namespace Trains {
             // Starting Track
             for (int y = -15; y <= -9; y++) Add(15, y);
             for (int x = 14; x >= 12; x--) Add(x, -9);
-            for (int y = -9; y <= -6; y++) Add(11, y);
+            for (int y = -9; y <= -2; y++) Add(11, y);
         }
 
         public void GenerateEnd() {
